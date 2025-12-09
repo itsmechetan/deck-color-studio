@@ -3,6 +3,7 @@ import { Navigation, Pagination, Keyboard } from "swiper/modules";
 import { SlidePreview } from "./SlidePreview";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeColors } from "@/lib/decks";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -10,7 +11,7 @@ import "swiper/css/pagination";
 
 interface SlideCarouselProps {
   slideCount: number;
-  colors: Record<string, string>;
+  colors: ThemeColors;
   activeSlide: number;
   onSlideChange: (index: number) => void;
 }

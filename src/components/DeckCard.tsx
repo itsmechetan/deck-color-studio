@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Deck } from "@/lib/decks";
+import { Deck, loadThemeColors, ThemeColors, getDefaultTheme } from "@/lib/decks";
 import { Layers } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface DeckCardProps {
   deck: Deck;
@@ -10,6 +11,12 @@ interface DeckCardProps {
 }
 
 export function DeckCard({ deck, index }: DeckCardProps) {
+  const [theme, setTheme] = useState<ThemeColors>(getDefaultTheme());
+
+  useEffect(() => {
+    loadThemeColors(deck.slug).then(setTheme);
+  }, [deck.slug]);
+
   return (
     <Link to={`/deck/${deck.slug}`}>
       <Card 
@@ -17,7 +24,7 @@ export function DeckCard({ deck, index }: DeckCardProps) {
         style={{ animationDelay: `${index * 50}ms` }}
       >
         <div className="relative aspect-video overflow-hidden">
-          <DeckThumbnail deck={deck} />
+          <DeckThumbnail theme={theme} />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-background/90 backdrop-blur-sm px-2.5 py-1 text-xs font-medium shadow-soft">
             <Layers className="h-3.5 w-3.5 text-primary" />
@@ -44,44 +51,40 @@ export function DeckCard({ deck, index }: DeckCardProps) {
   );
 }
 
-function DeckThumbnail({ deck }: { deck: Deck }) {
-  const primaryColor = deck.colors.find(c => c.key === "primary")?.default || "#E85D4C";
-  const secondaryColor = deck.colors.find(c => c.key === "secondary")?.default || "#2D9596";
-  const accentColor = deck.colors.find(c => c.key === "accent1")?.default || "#FFB347";
-
+function DeckThumbnail({ theme }: { theme: ThemeColors }) {
   return (
-    <div className="w-full h-full bg-muted flex items-center justify-center p-6 transition-transform duration-500 group-hover:scale-105">
+    <div className="w-full h-full flex items-center justify-center p-6 transition-transform duration-500 group-hover:scale-105" style={{ backgroundColor: theme.lt1 }}>
       <svg viewBox="0 0 320 180" className="w-full h-full">
         {/* Background */}
-        <rect x="0" y="0" width="320" height="180" fill="#FAFAFA" rx="4" />
+        <rect x="0" y="0" width="320" height="180" fill={theme.lt1} rx="4" />
         
         {/* Header bar */}
-        <rect x="20" y="20" width="280" height="8" rx="4" fill={primaryColor} opacity="0.15" />
+        <rect x="20" y="20" width="280" height="8" rx="4" fill={theme.accent1} opacity="0.15" />
         
         {/* Title placeholder */}
-        <rect x="20" y="45" width="160" height="14" rx="3" fill={primaryColor} />
-        <rect x="20" y="65" width="100" height="8" rx="2" fill="#94A3B8" opacity="0.5" />
+        <rect x="20" y="45" width="160" height="14" rx="3" fill={theme.accent1} />
+        <rect x="20" y="65" width="100" height="8" rx="2" fill={theme.dk2} opacity="0.5" />
         
         {/* Chart/Graph area */}
-        <rect x="20" y="90" width="130" height="70" rx="6" fill={secondaryColor} opacity="0.15" />
+        <rect x="20" y="90" width="130" height="70" rx="6" fill={theme.lt2} />
         
         {/* Bar chart inside */}
-        <rect x="30" y="120" width="15" height="30" rx="2" fill={primaryColor} />
-        <rect x="50" y="110" width="15" height="40" rx="2" fill={secondaryColor} />
-        <rect x="70" y="100" width="15" height="50" rx="2" fill={accentColor} />
-        <rect x="90" y="115" width="15" height="35" rx="2" fill={primaryColor} opacity="0.7" />
-        <rect x="110" y="105" width="15" height="45" rx="2" fill={secondaryColor} opacity="0.7" />
+        <rect x="30" y="120" width="15" height="30" rx="2" fill={theme.accent1} />
+        <rect x="50" y="110" width="15" height="40" rx="2" fill={theme.accent2} />
+        <rect x="70" y="100" width="15" height="50" rx="2" fill={theme.accent3} />
+        <rect x="90" y="115" width="15" height="35" rx="2" fill={theme.accent4} />
+        <rect x="110" y="105" width="15" height="45" rx="2" fill={theme.accent5} />
         
         {/* Right side content blocks */}
-        <rect x="170" y="90" width="130" height="30" rx="6" fill={accentColor} opacity="0.2" />
-        <rect x="180" y="100" width="80" height="8" rx="2" fill="#64748B" opacity="0.4" />
+        <rect x="170" y="90" width="130" height="30" rx="6" fill={theme.accent3} opacity="0.2" />
+        <rect x="180" y="100" width="80" height="8" rx="2" fill={theme.dk2} opacity="0.4" />
         
-        <rect x="170" y="130" width="130" height="30" rx="6" fill={primaryColor} opacity="0.1" />
-        <rect x="180" y="140" width="60" height="8" rx="2" fill="#64748B" opacity="0.4" />
+        <rect x="170" y="130" width="130" height="30" rx="6" fill={theme.accent1} opacity="0.1" />
+        <rect x="180" y="140" width="60" height="8" rx="2" fill={theme.dk2} opacity="0.4" />
         
         {/* Decorative circles */}
-        <circle cx="280" y="40" r="15" fill={secondaryColor} opacity="0.2" />
-        <circle cx="295" y="55" r="8" fill={accentColor} opacity="0.3" />
+        <circle cx="280" r="15" cy="40" fill={theme.accent2} opacity="0.2" />
+        <circle cx="295" r="8" cy="55" fill={theme.accent6} opacity="0.3" />
       </svg>
     </div>
   );

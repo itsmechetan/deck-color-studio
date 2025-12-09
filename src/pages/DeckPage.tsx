@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { SlideCarousel } from "@/components/SlideCarousel";
@@ -6,7 +6,7 @@ import { ColorSidebar } from "@/components/ColorSidebar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { getDeckBySlug, getDefaultColorsForDeck } from "@/lib/decks";
+import { getDeckBySlug, loadThemeColors, getDefaultTheme, ThemeColors } from "@/lib/decks";
 import { generatePptx } from "@/lib/generatePptx";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -21,13 +21,24 @@ const DeckPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const deck = getDeckBySlug(slug || "");
 
-  const [colors, setColors] = useState<Record<string, string>>(() =>
-    deck ? getDefaultColorsForDeck(deck) : {}
-  );
+  const [colors, setColors] = useState<ThemeColors>(getDefaultTheme());
+  const [defaultColors, setDefaultColors] = useState<ThemeColors>(getDefaultTheme());
   const [activeSlide, setActiveSlide] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleColorChange = useCallback((key: string, color: string) => {
+  useEffect(() => {
+    if (slug) {
+      setIsLoading(true);
+      loadThemeColors(slug).then((theme) => {
+        setColors(theme);
+        setDefaultColors(theme);
+        setIsLoading(false);
+      });
+    }
+  }, [slug]);
+
+  const handleColorChange = useCallback((key: keyof ThemeColors, color: string) => {
     setColors((prev) => ({ ...prev, [key]: color }));
   }, []);
 
@@ -38,35 +49,35 @@ const DeckPage = () => {
         .toString(16)
         .padStart(6, "0");
 
-    const newColors: Record<string, string> = {};
-    deck?.colors.forEach((color) => {
-      if (color.key === "background") {
-        newColors[color.key] = "#FFFFFF";
-      } else if (color.key === "textDark") {
-        newColors[color.key] = "#1A1A2E";
-      } else if (color.key === "textLight") {
-        newColors[color.key] = "#FFFFFF";
-      } else {
-        newColors[color.key] = randomColor();
-      }
-    });
+    const newColors: ThemeColors = {
+      dk1: "#1E293B",  // Keep dark text
+      lt1: "#FFFFFF",  // Keep light background
+      dk2: randomColor(),
+      lt2: "#F5F5F5",  // Keep light secondary
+      accent1: randomColor(),
+      accent2: randomColor(),
+      accent3: randomColor(),
+      accent4: randomColor(),
+      accent5: randomColor(),
+      accent6: randomColor(),
+      hlink: randomColor(),
+      folHlink: randomColor(),
+    };
     setColors(newColors);
 
     toast({
       title: "Colors randomized!",
       description: "Your palette has been updated with new colors.",
     });
-  }, [deck]);
+  }, []);
 
   const handleReset = useCallback(() => {
-    if (deck) {
-      setColors(getDefaultColorsForDeck(deck));
-      toast({
-        title: "Colors reset",
-        description: "Your palette has been restored to default.",
-      });
-    }
-  }, [deck]);
+    setColors(defaultColors);
+    toast({
+      title: "Colors reset",
+      description: "Your palette has been restored to default.",
+    });
+  }, [defaultColors]);
 
   const handleDownload = async () => {
     if (!deck) return;
@@ -148,7 +159,7 @@ const DeckPage = () => {
               variant="hero"
               size="lg"
               onClick={handleDownload}
-              disabled={isDownloading}
+              disabled={isDownloading || isLoading}
               className="w-full lg:w-auto"
             >
               {isDownloading ? (
@@ -167,23 +178,27 @@ const DeckPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
           {/* Carousel */}
           <div className="order-2 lg:order-1">
-            <SlideCarousel
-              slideCount={deck.slideCount}
-              colors={colors}
-              activeSlide={activeSlide}
-              onSlideChange={setActiveSlide}
-            />
+            {isLoading ? (
+              <div className="aspect-video rounded-xl bg-muted animate-pulse" />
+            ) : (
+              <SlideCarousel
+                slideCount={deck.slideCount}
+                colors={colors}
+                activeSlide={activeSlide}
+                onSlideChange={setActiveSlide}
+              />
+            )}
           </div>
 
           {/* Sidebar - Desktop */}
           <div className="order-1 lg:order-2 hidden lg:block">
-            <div className="sticky top-24 rounded-2xl border border-border/50 bg-gradient-card p-6 shadow-soft">
+            <div className="sticky top-24 rounded-2xl border border-border/50 bg-gradient-card p-5 shadow-soft max-h-[calc(100vh-120px)] overflow-y-auto">
               <ColorSidebar
-                deck={deck}
                 colors={colors}
+                defaultColors={defaultColors}
                 onColorChange={handleColorChange}
                 onRandomize={handleRandomize}
                 onReset={handleReset}
@@ -197,14 +212,14 @@ const DeckPage = () => {
               <SheetTrigger asChild>
                 <Button variant="glass" size="lg" className="w-full">
                   <Palette className="h-5 w-5 mr-2" />
-                  Customize Colors
+                  Customize Theme Colors
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-[80vh] rounded-t-3xl">
+              <SheetContent side="bottom" className="h-[85vh] rounded-t-3xl overflow-y-auto">
                 <div className="pt-4">
                   <ColorSidebar
-                    deck={deck}
                     colors={colors}
+                    defaultColors={defaultColors}
                     onColorChange={handleColorChange}
                     onRandomize={handleRandomize}
                     onReset={handleReset}
