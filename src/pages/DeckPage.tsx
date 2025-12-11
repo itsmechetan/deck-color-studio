@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { getDeckBySlug, loadThemeColors, getDefaultTheme, ThemeColors } from "@/lib/decks";
 import { generatePptx } from "@/lib/generatePptx";
+import { generateThmx } from "@/lib/generateThmx";
 import { toast } from "@/hooks/use-toast";
 import {
   Download,
@@ -15,6 +16,7 @@ import {
   ChevronLeft,
   Loader2,
   Layers,
+  FileDown,
 } from "lucide-react";
 
 const DeckPage = () => {
@@ -25,6 +27,7 @@ const DeckPage = () => {
   const [defaultColors, setDefaultColors] = useState<ThemeColors>(getDefaultTheme());
   const [activeSlide, setActiveSlide] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingTheme, setIsDownloadingTheme] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -100,6 +103,27 @@ const DeckPage = () => {
     }
   };
 
+  const handleDownloadTheme = async () => {
+    if (!deck) return;
+
+    setIsDownloadingTheme(true);
+    try {
+      await generateThmx(deck.title, colors);
+      toast({
+        title: "Theme downloaded!",
+        description: `${deck.title} theme (.thmx) is ready.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Theme download failed",
+        description: "There was an error generating the theme file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloadingTheme(false);
+    }
+  };
+
   if (!deck) {
     return (
       <div className="min-h-screen bg-background">
@@ -155,25 +179,46 @@ const DeckPage = () => {
               </div>
             </div>
 
-            <Button
-              variant="hero"
-              size="lg"
-              onClick={handleDownload}
-              disabled={isDownloading || isLoading}
-              className="w-full lg:w-auto"
-            >
-              {isDownloading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download className="h-5 w-5" />
-                  Download PowerPoint
-                </>
-              )}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+              <Button
+                variant="hero"
+                size="lg"
+                onClick={handleDownload}
+                disabled={isDownloading || isLoading}
+                className="w-full sm:w-auto"
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-5 w-5" />
+                    Download PowerPoint
+                  </>
+                )}
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handleDownloadTheme}
+                disabled={isDownloadingTheme || isLoading}
+                className="w-full sm:w-auto"
+              >
+                {isDownloadingTheme ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="h-5 w-5" />
+                    Export Theme (.thmx)
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
