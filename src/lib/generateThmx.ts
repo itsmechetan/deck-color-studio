@@ -1,19 +1,16 @@
 import { ThemeColors } from "./decks";
 import JSZip from "jszip";
 
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : { r: 0, g: 0, b: 0 };
-}
-
 function rgbToOoxmlHex(hex: string): string {
   return hex.replace("#", "").toUpperCase();
+}
+
+function generateGuid(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16).toUpperCase();
+  });
 }
 
 export async function generateThmx(
@@ -21,6 +18,8 @@ export async function generateThmx(
   colors: ThemeColors
 ): Promise<void> {
   const zip = new JSZip();
+  const themeId = `{${generateGuid()}}`;
+  const themeVid = `{${generateGuid()}}`;
 
   // [Content_Types].xml
   const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -32,15 +31,15 @@ export async function generateThmx(
 
   zip.file("[Content_Types].xml", contentTypes);
 
-  // _rels/.rels
+  // _rels/.rels - Fixed relationship type to "theme"
   const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="theme/theme1.xml"/>
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="theme/theme1.xml"/>
 </Relationships>`;
 
   zip.folder("_rels")?.file(".rels", rels);
 
-  // theme/theme1.xml - Main theme file with color scheme
+  // theme/theme1.xml - Main theme file with color scheme and theme family extension
   const themeXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <a:theme xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" name="${themeName}">
   <a:themeElements>
@@ -87,11 +86,35 @@ export async function generateThmx(
         <a:latin typeface="Calibri Light" panose="020F0302020204030204"/>
         <a:ea typeface=""/>
         <a:cs typeface=""/>
+        <a:font script="Jpan" typeface="游ゴシック Light"/>
+        <a:font script="Hang" typeface="맑은 고딕"/>
+        <a:font script="Hans" typeface="等线 Light"/>
+        <a:font script="Hant" typeface="新細明體"/>
+        <a:font script="Arab" typeface="Times New Roman"/>
+        <a:font script="Hebr" typeface="Times New Roman"/>
+        <a:font script="Thai" typeface="Angsana New"/>
+        <a:font script="Ethi" typeface="Nyala"/>
+        <a:font script="Beng" typeface="Vrinda"/>
+        <a:font script="Gujr" typeface="Shruti"/>
+        <a:font script="Khmr" typeface="MoolBoran"/>
+        <a:font script="Knda" typeface="Tunga"/>
       </a:majorFont>
       <a:minorFont>
         <a:latin typeface="Calibri" panose="020F0502020204030204"/>
         <a:ea typeface=""/>
         <a:cs typeface=""/>
+        <a:font script="Jpan" typeface="游ゴシック"/>
+        <a:font script="Hang" typeface="맑은 고딕"/>
+        <a:font script="Hans" typeface="等线"/>
+        <a:font script="Hant" typeface="新細明體"/>
+        <a:font script="Arab" typeface="Arial"/>
+        <a:font script="Hebr" typeface="Arial"/>
+        <a:font script="Thai" typeface="Cordia New"/>
+        <a:font script="Ethi" typeface="Nyala"/>
+        <a:font script="Beng" typeface="Vrinda"/>
+        <a:font script="Gujr" typeface="Shruti"/>
+        <a:font script="Khmr" typeface="DaunPenh"/>
+        <a:font script="Knda" typeface="Tunga"/>
       </a:minorFont>
     </a:fontScheme>
     <a:fmtScheme name="${themeName} Format">
@@ -240,6 +263,11 @@ export async function generateThmx(
   </a:themeElements>
   <a:objectDefaults/>
   <a:extraClrSchemeLst/>
+  <a:extLst>
+    <a:ext uri="{05A4C25C-085E-4340-85A3-A5531E510DB2}">
+      <thm15:themeFamily xmlns:thm15="http://schemas.microsoft.com/office/thememl/2012/main" name="${themeName}" id="${themeId}" vid="${themeVid}"/>
+    </a:ext>
+  </a:extLst>
 </a:theme>`;
 
   zip.folder("theme")?.file("theme1.xml", themeXml);
