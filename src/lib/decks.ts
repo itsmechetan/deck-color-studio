@@ -41,6 +41,7 @@ export interface Deck {
   description: string;
   tags: string[];
   slideCount: number;
+  hasTemplate?: boolean; // Whether this deck has a PPTX template
 }
 
 export const decks: Deck[] = [
@@ -148,6 +149,14 @@ export const decks: Deck[] = [
     description: "Bold slides for event presentations",
     tags: ["Event", "Keynote", "Conference"],
     slideCount: 15,
+  },
+  {
+    slug: "analyst-academy",
+    title: "Analyst Academy",
+    description: "Professional analyst presentation with native PowerPoint theming",
+    tags: ["Business", "Analytics", "Premium"],
+    slideCount: 14,
+    hasTemplate: true,
   },
 ];
 
