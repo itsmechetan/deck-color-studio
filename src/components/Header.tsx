@@ -32,6 +32,9 @@ export function Header() {
           <Button variant="ghost" size="sm" asChild>
             <Link to="/">Gallery</Link>
           </Button>
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/templates">Templates</Link>
+          </Button>
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
             {isDark ? (
               <Sun className="h-5 w-5 transition-transform hover:rotate-45" />
