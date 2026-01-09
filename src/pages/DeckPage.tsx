@@ -223,9 +223,9 @@ const DeckPage = () => {
         </div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 pb-24 lg:pb-0">
           {/* Carousel */}
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1 min-w-0">
             {isLoading ? (
               <div className="aspect-video rounded-xl bg-muted animate-pulse" />
             ) : (

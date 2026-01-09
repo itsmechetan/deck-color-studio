@@ -78,7 +78,7 @@ export function SvgSlidePreview({
       }`}
     >
       <div
-        className="w-full h-full"
+        className="w-full h-full [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
         dangerouslySetInnerHTML={{ __html: recoloredSvg }}
       />
     </div>

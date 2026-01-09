@@ -44,7 +44,7 @@ export function DeckCard({ deck, index }: DeckCardProps) {
         <div className="relative aspect-video overflow-hidden">
           {recoloredSvg ? (
             <div 
-              className="w-full h-full transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full transition-transform duration-500 group-hover:scale-105 [&>svg]:w-full [&>svg]:h-full [&>svg]:object-contain"
               dangerouslySetInnerHTML={{ __html: recoloredSvg }}
             />
           ) : (
