@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Deck, loadThemeColors, ThemeColors, getDefaultTheme } from "@/lib/decks";
 import { Layers } from "lucide-react";
 import { useEffect, useState } from "react";
+import { loadSvgContent, loadColorMapping, recolorSvg, ColorMapping } from "@/lib/recolorSvg";
 
 interface DeckCardProps {
   deck: Deck;
@@ -12,10 +13,27 @@ interface DeckCardProps {
 
 export function DeckCard({ deck, index }: DeckCardProps) {
   const [theme, setTheme] = useState<ThemeColors>(getDefaultTheme());
+  const [svgContent, setSvgContent] = useState<string | null>(null);
+  const [colorMapping, setColorMapping] = useState<ColorMapping | null>(null);
 
   useEffect(() => {
     loadThemeColors(deck.slug).then(setTheme);
+    
+    // Try to load SVG preview
+    Promise.all([
+      loadSvgContent(deck.slug, 1),
+      loadColorMapping(deck.slug),
+    ]).then(([svg, mapping]) => {
+      if (svg && mapping) {
+        setSvgContent(svg);
+        setColorMapping(mapping);
+      }
+    });
   }, [deck.slug]);
+
+  const recoloredSvg = svgContent && colorMapping
+    ? recolorSvg(svgContent, theme, colorMapping)
+    : null;
 
   return (
     <Link to={`/deck/${deck.slug}`}>
@@ -24,7 +42,14 @@ export function DeckCard({ deck, index }: DeckCardProps) {
         style={{ animationDelay: `${index * 50}ms` }}
       >
         <div className="relative aspect-video overflow-hidden">
-          <DeckThumbnail theme={theme} />
+          {recoloredSvg ? (
+            <div 
+              className="w-full h-full transition-transform duration-500 group-hover:scale-105"
+              dangerouslySetInnerHTML={{ __html: recoloredSvg }}
+            />
+          ) : (
+            <DeckThumbnail theme={theme} />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-background/90 backdrop-blur-sm px-2.5 py-1 text-xs font-medium shadow-soft">
             <Layers className="h-3.5 w-3.5 text-primary" />
