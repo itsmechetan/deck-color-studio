@@ -1,0 +1,10 @@
+{
+  "colorMappings": {
+    "#EBDCF0": "accent1",
+    "#9B59B6": "accent2",
+    "#8E44AD": "accent3",
+    "#FFFFFF": "lt1",
+    "#000000": "dk1",
+    "#F2F2F2": "lt2"
+  }
+}

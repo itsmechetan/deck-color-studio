@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -5,10 +6,11 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { SlidePreview } from "./SlidePreview";
+import { SvgSlidePreview } from "./SvgSlidePreview";
 import { ThemeColors } from "@/lib/decks";
 
 interface SlideCarouselProps {
+  slug: string;
   slideCount: number;
   colors: ThemeColors;
   activeSlide: number;
@@ -16,6 +18,7 @@ interface SlideCarouselProps {
 }
 
 export function SlideCarousel({
+  slug,
   slideCount,
   colors,
   activeSlide,
@@ -34,7 +37,8 @@ export function SlideCarousel({
         <CarouselContent>
           {slides.map((slideNumber) => (
             <CarouselItem key={slideNumber}>
-              <SlidePreview
+              <SvgSlidePreview
+                slug={slug}
                 slideNumber={slideNumber}
                 colors={colors}
                 isActive={slideNumber === activeSlide + 1}

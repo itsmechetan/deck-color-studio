@@ -230,6 +230,7 @@ const DeckPage = () => {
               <div className="aspect-video rounded-xl bg-muted animate-pulse" />
             ) : (
               <SlideCarousel
+                slug={slug || ""}
                 slideCount={deck.slideCount}
                 colors={colors}
                 activeSlide={activeSlide}
